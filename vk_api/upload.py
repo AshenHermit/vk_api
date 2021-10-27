@@ -411,7 +411,8 @@ class VkUpload(object):
 
         response.update({
             'title': title,
-            'tags': tags
+            'tags': tags,
+            'type': doc_type
         })
 
         return self.vk.docs.save(**response)

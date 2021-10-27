@@ -24,6 +24,7 @@ from .utils import (
     code_from_number, search_re, clear_string,
     cookies_to_list, set_cookies_from_list
 )
+from selenium.webdriver import Chrome
 
 RE_LOGIN_HASH = re.compile(r'name="lg_h" value="([a-z0-9]+)"')
 RE_CAPTCHAID = re.compile(r"onLoginCaptcha\('(\d+)'")
@@ -134,6 +135,25 @@ class VkApi(object):
             self.http.cookies.get('remixsid') or
             self.http.cookies.get('remixsid6')
         )
+
+    def auth_with_app(self):
+        """ Аутентификация через implicit flow, с помощью браузера """
+        driver = Chrome()
+        app_id = 6121396 # vk admin
+        scope = int(self.scope)
+        url = f"https://oauth.vk.com/authorize?client_id={app_id}&scope={self.scope}&redirect_uri=https://oauth.vk.com/blank.html&display=page&response_type=token&revoke=1"
+        driver.get(url)
+        inputs = driver.find_elements_by_class_name("oauth_form_input")
+        inputs[0].send_keys(self.login)
+        inputs[1].send_keys(self.password)
+        driver.find_element_by_class_name("oauth_button").click()
+        driver.find_element_by_class_name("button_indent").click()
+        access_token = urllib.parse.parse_qs(urllib.parse.urlsplit(driver.current_url).fragment)["access_token"][0]
+        driver.close()
+
+        self.app_id = app_id
+        self.token = {'access_token': access_token}
+        self.auth()
 
     def auth(self, reauth=False, token_only=False):
         """ Аутентификация
