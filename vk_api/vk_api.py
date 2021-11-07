@@ -154,7 +154,7 @@ class VkApi(object):
 
         self.app_id = app_id
         self.token = {'access_token': access_token}
-        self.auth()
+        self.auth(token_only=True)
 
     def auth(self, reauth=False, token_only=False):
         """ Аутентификация
